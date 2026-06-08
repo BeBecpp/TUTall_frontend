@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TUTall — AI-powered STEM learning, study plans, and scholarship readiness powered by AccessSTEM AI.">
+  <title>TUTall — Learn STEM Smarter | AccessSTEM AI</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body class="bg-slate-50 text-slate-800 antialiased">
+
+  <!-- Toast Container -->
+  <div id="toast-container"></div>
+
+  <!-- Navbar -->
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 bg-slate-900/80 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between h-16">
+        <a href="#home" class="flex items-center gap-2 shrink-0">
+          <div class="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-sm">T</div>
+          <span class="text-white font-bold text-lg">TUTall</span>
+        </a>
+
+        <div class="hidden lg:flex items-center gap-1 nav-scroll overflow-x-auto">
+          <a href="#home" class="nav-link">Home</a>
+          <a href="#learn" class="nav-link">Learn</a>
+          <a href="#assistant" class="nav-link">Ask AI</a>
+          <a href="#quiz" class="nav-link">Quiz</a>
+          <a href="#study" class="nav-link">Study Plan</a>
+          <a href="#scholarship" class="nav-link">Scholarship</a>
+          <a href="#progress" class="nav-link">Progress</a>
+          <a href="#about" class="nav-link">About</a>
+        </div>
+
+        <button id="mobile-menu-toggle" class="lg:hidden text-white p-2 rounded-lg hover:bg-white/10" aria-label="Toggle menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/></svg>
+        </button>
+      </div>
+
+      <div id="mobile-menu" class="mobile-menu lg:hidden pb-4">
+        <div class="flex flex-col gap-1">
+          <a href="#home" class="nav-link">Home</a>
+          <a href="#learn" class="nav-link">Learn</a>
+          <a href="#assistant" class="nav-link">Ask AI</a>
+          <a href="#quiz" class="nav-link">Quiz</a>
+          <a href="#study" class="nav-link">Study Plan</a>
+          <a href="#scholarship" class="nav-link">Scholarship</a>
+          <a href="#progress" class="nav-link">Progress</a>
+          <a href="#about" class="nav-link">About</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- ═══ HOME ═══ -->
+  <section id="home" class="hero-gradient min-h-screen flex items-center pt-16">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 py-20 relative z-10 w-full">
+      <div class="grid lg:grid-cols-2 gap-12 items-center">
+        <div>
+          <p class="text-cyan-400 font-semibold text-sm tracking-widest uppercase mb-3 fade-in">Powered by AccessSTEM AI</p>
+          <h1 class="text-5xl sm:text-6xl lg:text-7xl font-extrabold text-white mb-4 fade-in delay-1">TUTall</h1>
+          <h2 class="text-2xl sm:text-3xl font-bold text-white/90 mb-6 fade-in delay-2 leading-tight">
+            Learn STEM smarter.<br>
+            <span class="gradient-text">Plan your future better.</span>
+          </h2>
+          <p class="text-lg text-slate-300 mb-8 max-w-xl fade-in delay-3">
+            TUTall helps students access AI-powered STEM explanations, guided quizzes, study plans, progress tracking, and scholarship readiness support.
+          </p>
+          <div class="flex flex-wrap gap-4 fade-in delay-4">
+            <button id="hero-learn" class="btn-primary">Start Learning</button>
+            <button id="hero-assistant" class="btn-secondary">Ask AccessSTEM AI</button>
+            <button id="hero-scholarship" class="btn-secondary">Check Scholarship Readiness</button>
+          </div>
+        </div>
+
+        <div class="glass rounded-2xl p-6 fade-in delay-3">
+          <h3 class="text-white font-semibold mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-cyan-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            Backend Status
+          </h3>
+          <div id="health-status" class="text-white">
+            <div class="flex items-center gap-2">
+              <span class="spinner"></span>
+              <span class="text-slate-300 text-sm">Checking connection...</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature pills -->
+      <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mt-16">
+        <div class="glass rounded-xl p-4 text-center fade-in delay-2">
+          <p class="text-2xl mb-1">🧠</p>
+          <p class="text-white text-sm font-medium">AI Explanations</p>
+        </div>
+        <div class="glass rounded-xl p-4 text-center fade-in delay-3">
+          <p class="text-2xl mb-1">📝</p>
+          <p class="text-white text-sm font-medium">Smart Quizzes</p>
+        </div>
+        <div class="glass rounded-xl p-4 text-center fade-in delay-3">
+          <p class="text-2xl mb-1">📅</p>
+          <p class="text-white text-sm font-medium">Study Plans</p>
+        </div>
+        <div class="glass rounded-xl p-4 text-center fade-in delay-4">
+          <p class="text-2xl mb-1">🎓</p>
+          <p class="text-white text-sm font-medium">Scholarships</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ LEARN ═══ -->
+  <section id="learn" class="section-padding bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-10">
+        <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Learn</span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-2">AI-Powered STEM Explanations</h2>
+        <p class="text-slate-500 mt-3 max-w-2xl mx-auto">Get clear explanations with examples, key points, and follow-up topics — tailored to your level.</p>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8">
+        <div class="grid sm:grid-cols-2 gap-4 mb-6">
+          <div>
+            <label class="form-label" for="learn-topic">Topic</label>
+            <input type="text" id="learn-topic" class="form-input" value="Newton's Laws" placeholder="e.g. Newton's Laws">
+          </div>
+          <div>
+            <label class="form-label" for="learn-difficulty">Difficulty</label>
+            <select id="learn-difficulty" class="form-input">
+              <option value="beginner" selected>Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+        </div>
+        <label class="flex items-center gap-2 mb-6 cursor-pointer">
+          <input type="checkbox" id="learn-low-bandwidth" class="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+          <span class="text-sm text-slate-600">Low bandwidth mode (shorter responses)</span>
+        </label>
+        <button id="btn-explain" class="btn-primary w-full sm:w-auto">
+          <span class="btn-label">Generate Explanation</span>
+          <span class="btn-spinner hidden"><span class="spinner"></span></span>
+        </button>
+        <div id="explain-result" class="mt-6">
+          <div class="empty-state">
+            <p>Click "Generate Explanation" to get started with your topic.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ASK AI ═══ -->
+  <section id="assistant" class="section-padding bg-slate-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-10">
+        <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Ask AI</span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-2">AccessSTEM AI Assistant</h2>
+        <p class="text-slate-500 mt-3 max-w-2xl mx-auto">Ask follow-up questions and get guided help without direct answers to cheat.</p>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8">
+        <div class="grid sm:grid-cols-3 gap-4 mb-4">
+          <div>
+            <label class="form-label" for="assistant-topic">Topic</label>
+            <input type="text" id="assistant-topic" class="form-input" value="Newton's Laws">
+          </div>
+          <div>
+            <label class="form-label" for="assistant-difficulty">Difficulty</label>
+            <select id="assistant-difficulty" class="form-input">
+              <option value="beginner" selected>Beginner</option>
+              <option value="intermediate">Intermediate</option>
+              <option value="advanced">Advanced</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="assistant-mode">Mode</label>
+            <select id="assistant-mode" class="form-input">
+              <option value="learning" selected>Learning</option>
+              <option value="review">Review</option>
+              <option value="exam_prep">Exam Prep</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" for="assistant-question">Your Question</label>
+          <textarea id="assistant-question" class="form-input" rows="3" placeholder="Can you explain this with an example?">Can you explain this with an example?</textarea>
+        </div>
+        <button id="btn-assistant" class="btn-primary w-full sm:w-auto">
+          <span class="btn-label">Ask Assistant</span>
+          <span class="btn-spinner hidden"><span class="spinner"></span></span>
+        </button>
+        <div id="assistant-result" class="mt-6">
+          <div class="empty-state">
+            <p>Ask a question to start a conversation with AccessSTEM AI.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ QUIZ ═══ -->
+  <section id="quiz" class="section-padding bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-10">
+        <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Quiz</span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-2">Interactive STEM Quiz</h2>
+        <p class="text-slate-500 mt-3 max-w-2xl mx-auto">Generate quizzes, get hints, and check your answers — progress saves automatically.</p>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8">
+        <div class="grid sm:grid-cols-3 gap-4 mb-6">
+          <div>
+            <label class="form-label" for="quiz-topic">Topic</label>
+            <input type="text" id="quiz-topic" class="form-input" value="Photosynthesis">
+          </div>
+          <div>
+            <label class="form-label" for="quiz-difficulty">Difficulty</label>
+            <select id="quiz-difficulty" class="form-input">
+              <option value="elementary">Elementary</option>
+              <option value="middle school" selected>Middle School</option>
+              <option value="high school">High School</option>
+              <option value="college">College</option>
+            </select>
+          </div>
+          <div>
+            <label class="form-label" for="quiz-count">Questions (3–7)</label>
+            <select id="quiz-count" class="form-input">
+              <option value="3">3 Questions</option>
+              <option value="5" selected>5 Questions</option>
+              <option value="7">7 Questions</option>
+            </select>
+          </div>
+        </div>
+        <div class="flex flex-wrap gap-3 mb-6">
+          <button id="btn-quiz" class="btn-primary">
+            <span class="btn-label">Generate Quiz</span>
+            <span class="btn-spinner hidden"><span class="spinner"></span></span>
+          </button>
+          <button id="btn-submit-quiz" class="btn-outline">
+            <span class="btn-label">Submit Quiz</span>
+            <span class="btn-spinner hidden"><span class="spinner spinner-dark"></span></span>
+          </button>
+        </div>
+        <div id="quiz-result">
+          <div class="empty-state">
+            <p>Generate a quiz to test your knowledge.</p>
+          </div>
+        </div>
+        <div id="quiz-score"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ STUDY PLAN ═══ -->
+  <section id="study" class="section-padding bg-slate-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-10">
+        <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Study Plan</span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-2">Personalized Study Plan</h2>
+        <p class="text-slate-500 mt-3 max-w-2xl mx-auto">Get a day-by-day plan focused on your weak topics and goals.</p>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8">
+        <div class="space-y-4 mb-6">
+          <div>
+            <label class="form-label" for="study-goal">Goal</label>
+            <input type="text" id="study-goal" class="form-input" value="Improve physics and algebra before my quiz">
+          </div>
+          <div class="grid sm:grid-cols-2 gap-4">
+            <div>
+              <label class="form-label" for="study-grade">Grade Level</label>
+              <input type="text" id="study-grade" class="form-input" value="high school">
+            </div>
+            <div>
+              <label class="form-label" for="study-days">Available Days</label>
+              <input type="number" id="study-days" class="form-input" value="7" min="1" max="30">
+            </div>
+          </div>
+          <div>
+            <label class="form-label" for="study-weak">Weak Topics (comma-separated)</label>
+            <input type="text" id="study-weak" class="form-input" value="forces, linear equations">
+          </div>
+        </div>
+        <button id="btn-study" class="btn-primary w-full sm:w-auto">
+          <span class="btn-label">Generate Study Plan</span>
+          <span class="btn-spinner hidden"><span class="spinner"></span></span>
+        </button>
+        <div id="study-result" class="mt-6">
+          <div class="empty-state">
+            <p>Enter your goals and generate a personalized study plan.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ SCHOLARSHIP ═══ -->
+  <section id="scholarship" class="section-padding bg-white">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-10">
+        <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Scholarship</span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-2">Scholarship Readiness</h2>
+        <p class="text-slate-500 mt-3 max-w-2xl mx-auto">Calculate your readiness score and discover scholarship matches tailored to your profile.</p>
+      </div>
+
+      <div class="glass-card p-6 sm:p-8">
+        <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+          <div>
+            <label class="form-label" for="sch-grade">Grade Level</label>
+            <input type="text" id="sch-grade" class="form-input" value="11">
+          </div>
+          <div>
+            <label class="form-label" for="sch-gpa">GPA</label>
+            <input type="number" id="sch-gpa" class="form-input" value="3.8" step="0.1" min="0" max="4">
+          </div>
+          <div>
+            <label class="form-label" for="sch-country">Country</label>
+            <input type="text" id="sch-country" class="form-input" value="Mongolia">
+          </div>
+          <div>
+            <label class="form-label" for="sch-major">Intended Major</label>
+            <input type="text" id="sch-major" class="form-input" value="Computer Science">
+          </div>
+          <div>
+            <label class="form-label" for="sch-english">English Level</label>
+            <input type="text" id="sch-english" class="form-input" value="B2">
+          </div>
+          <div>
+            <label class="form-label" for="sch-need">Financial Need</label>
+            <select id="sch-need" class="form-input">
+              <option value="low">Low</option>
+              <option value="medium">Medium</option>
+              <option value="high" selected>High</option>
+            </select>
+          </div>
+        </div>
+        <div class="mb-4">
+          <label class="form-label" for="sch-activities">Activities</label>
+          <textarea id="sch-activities" class="form-input" rows="2">Hackathons, coding club, volunteer teaching</textarea>
+        </div>
+        <div class="flex flex-wrap gap-6 mb-6">
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="sch-essay" class="w-4 h-4 rounded text-indigo-600">
+            <span class="text-sm text-slate-600">Has essay ready</span>
+          </label>
+          <label class="flex items-center gap-2 cursor-pointer">
+            <input type="checkbox" id="sch-english-test" class="w-4 h-4 rounded text-indigo-600">
+            <span class="text-sm text-slate-600">Has English test score</span>
+          </label>
+        </div>
+        <button id="btn-scholarship" class="btn-primary w-full sm:w-auto">
+          <span class="btn-label">Calculate Scholarship Readiness</span>
+          <span class="btn-spinner hidden"><span class="spinner"></span></span>
+        </button>
+        <div id="scholarship-result" class="mt-6">
+          <div class="empty-state">
+            <p>Fill in your profile and calculate your scholarship readiness.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ PROGRESS ═══ -->
+  <section id="progress" class="section-padding bg-slate-50">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-10">
+        <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">Progress</span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-2">Learning Progress</h2>
+        <p class="text-slate-500 mt-3 max-w-2xl mx-auto">Track your quiz scores and see how you're improving over time.</p>
+      </div>
+
+      <div class="grid sm:grid-cols-2 gap-4 mb-6">
+        <div class="glass-card p-6 text-center">
+          <p class="text-sm text-slate-500 mb-1">Average Score</p>
+          <p id="progress-avg" class="text-3xl font-bold gradient-text">—</p>
+        </div>
+        <div class="glass-card p-6 text-center">
+          <p class="text-sm text-slate-500 mb-1">Topics Completed</p>
+          <p id="progress-count" class="text-3xl font-bold text-indigo-600">0</p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3 mb-6">
+        <button id="btn-refresh-progress" class="btn-primary">
+          <span class="btn-label">Refresh Progress</span>
+          <span class="btn-spinner hidden"><span class="spinner"></span></span>
+        </button>
+        <button id="btn-clear-progress" class="btn-outline text-red-600 border-red-200 hover:bg-red-50">
+          <span class="btn-label">Clear Progress</span>
+          <span class="btn-spinner hidden"><span class="spinner spinner-dark"></span></span>
+        </button>
+      </div>
+
+      <div id="progress-list">
+        <div class="empty-state">
+          <p>Loading progress...</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══ ABOUT ═══ -->
+  <section id="about" class="section-padding bg-white">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6">
+      <div class="text-center mb-10">
+        <span class="text-indigo-600 font-semibold text-sm uppercase tracking-wider">About</span>
+        <h2 class="text-3xl sm:text-4xl font-bold text-slate-900 mt-2">TUTall for STEMINATE HACKS 2026</h2>
+        <p class="text-slate-500 mt-3 max-w-2xl mx-auto">AI for a Better World — Community &amp; Access through STEM education.</p>
+      </div>
+
+      <div class="grid md:grid-cols-2 gap-6">
+        <div class="glass-card p-6">
+          <h3 class="font-bold text-slate-800 mb-3">Our Mission</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            TUTall bridges the STEM education gap by providing AI-powered learning tools accessible to students everywhere — especially those with limited resources or bandwidth.
+          </p>
+        </div>
+        <div class="glass-card p-6">
+          <h3 class="font-bold text-slate-800 mb-3">AccessSTEM AI Engine</h3>
+          <p class="text-slate-600 text-sm leading-relaxed">
+            Our secure backend powers explanations, quizzes, hints, study plans, and scholarship matching — with Gemini AI and intelligent fallback modes.
+          </p>
+        </div>
+        <div class="glass-card p-6">
+          <h3 class="font-bold text-slate-800 mb-3">Key Features</h3>
+          <ul class="text-sm text-slate-600 space-y-2">
+            <li>✦ AI-powered STEM explanations</li>
+            <li>✦ Interactive quizzes with hints</li>
+            <li>✦ Personalized study plans</li>
+            <li>✦ Scholarship readiness scoring</li>
+            <li>✦ Progress tracking</li>
+          </ul>
+        </div>
+        <div class="glass-card p-6">
+          <h3 class="font-bold text-slate-800 mb-3">Demo Flow</h3>
+          <ol class="text-sm text-slate-600 space-y-2 list-decimal list-inside">
+            <li>Learn a STEM topic</li>
+            <li>Ask AI follow-up questions</li>
+            <li>Generate &amp; take a quiz</li>
+            <li>Get hints &amp; submit answers</li>
+            <li>Save progress automatically</li>
+            <li>Generate a study plan</li>
+            <li>Check scholarship readiness</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Footer -->
+  <footer class="bg-slate-900 text-slate-400 py-10">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 text-center">
+      <p class="text-white font-bold text-lg mb-1">TUTall</p>
+      <p class="text-sm mb-4">Powered by AccessSTEM AI · STEMINATE HACKS 2026</p>
+      <p class="text-xs">Theme: AI for a Better World — Community &amp; Access</p>
+    </div>
+  </footer>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
