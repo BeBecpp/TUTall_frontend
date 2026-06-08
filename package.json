@@ -1,0 +1,14 @@
+{
+  "name": "tutall-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Static TUTall frontend for GitHub Pages",
+  "scripts": {
+    "dev": "serve . -l 3000",
+    "build": "echo 'No build step required for this static site.'",
+    "start": "npm run dev"
+  },
+  "devDependencies": {
+    "serve": "^14.2.0"
+  }
+}

@@ -1,41 +1,18 @@
-/* TUTall — AccessSTEM AI Frontend */
-
 (function () {
   "use strict";
 
-  // ─── Config & State ───────────────────────────────────────────────
-  var config = window.TUTALL_CONFIG;
   var state = {
-    health: null,
     quiz: null,
     quizAnswers: {},
     quizHints: {},
-    quizSubmitted: false,
-    progress: [],
-    currentTopic: "Newton's Laws"
+    quizSubmitted: false
   };
 
-  // ─── DOM Helpers ──────────────────────────────────────────────────
-  function $(id) {
-    return document.getElementById(id);
-  }
-
-  function $$(selector) {
-    return document.querySelectorAll(selector);
-  }
-
-  function setHTML(id, html) {
-    var el = $(id);
-    if (el) el.innerHTML = html;
-  }
-
-  function setText(id, text) {
-    var el = $(id);
-    if (el) el.textContent = text;
-  }
-
-  function setLoading(btnId, loading) {
-    var btn = $(btnId);
+  function $(id) { return document.getElementById(id); }
+  function $$(selector) { return document.querySelectorAll(selector); }
+  function setHTML(id, html) { var el = $(id); if (el) el.innerHTML = html; }
+  function setLoading(id, loading) {
+    var btn = $(id);
     if (!btn) return;
     btn.disabled = loading;
     var label = btn.querySelector(".btn-label");
@@ -44,8 +21,20 @@
     if (spinner) spinner.classList.toggle("hidden", !loading);
   }
 
+  function showToast(message, type) {
+    var container = $("toast-container");
+    if (!container) return;
+    var toast = document.createElement("div");
+    toast.className = "toast " + (type || "info");
+    toast.textContent = message;
+    container.appendChild(toast);
+    setTimeout(function () {
+      if (toast.parentNode) toast.parentNode.removeChild(toast);
+    }, 3500);
+  }
+
   function escapeHtml(str) {
-    if (!str) return "";
+    if (str === undefined || str === null) return "";
     var div = document.createElement("div");
     div.textContent = str;
     return div.innerHTML;
@@ -57,302 +46,180 @@
     return Math.min(7, Math.max(3, n));
   }
 
-  // ─── API Helper ───────────────────────────────────────────────────
-  async function apiRequest(path, options) {
-    var url = config.API_BASE_URL + path;
-    var opts = options || {};
-    var fetchOpts = {
-      method: opts.method || "GET",
-      headers: { "Content-Type": "application/json" }
+  function randomFrom(list) {
+    return list[Math.floor(Math.random() * list.length)];
+  }
+
+  function buildMockExplanation(topic, difficulty) {
+    var base = {
+      beginner: {
+        points: ["Simple definitions", "Key examples", "Real-world connections"]
+      },
+      intermediate: {
+        points: ["Main principles", "Common applications", "Study strategy"]
+      },
+      advanced: {
+        points: ["Core theory", "Problem-solving edge", "Exam-ready framing"]
+      }
     };
-    if (opts.body) fetchOpts.body = JSON.stringify(opts.body);
 
-    try {
-      var response = await fetch(url, fetchOpts);
-      var data = null;
+    var nextTopics = ["Vectors in motion", "Energy transfer", "Systems of equations", "Algorithm design", "Cell structure"];
+    return {
+      topic: topic || "STEM concept",
+      explanation: "This explanation helps you understand " + topic + " with a focus on clarity and the vocabulary used in STEM classrooms.",
+      example: "For example, if we look at " + topic + ", it becomes easier when you break it into smaller steps and connect it to a familiar problem.",
+      key_points: (base[difficulty] ? base[difficulty].points : base.beginner.points),
+      next_topics: [randomFrom(nextTopics), randomFrom(nextTopics)],
+      source: "AccessSTEM AI Demo"
+    };
+  }
 
-      try {
-        data = await response.json();
-      } catch (e) {
-        data = null;
+  function buildMockAssistant(topic, question) {
+    return {
+      answer: "AccessSTEM AI supports your question on " + topic + " with a friendly explanation that helps you think through the idea.",
+      key_points: ["Focus on the main idea", "Link each step to the question", "Try a small example"],
+      next_steps: ["Highlight the key formula", "Do a quick practice problem", "Summarize the concept in your own words"],
+      suggested_questions: ["Can you compare this with a similar topic?", "What is the common mistake here?", "How would I solve this step-by-step?"],
+      source: "AccessSTEM AI Demo"
+    };
+  }
+
+  function createMockQuiz(topic, difficulty, count) {
+    var templates = [
+      {
+        question: "What is a key characteristic of " + topic + "?",
+        options: ["It relies on careful definitions.", "It is always unrelated to problems.", "It only applies in literature.", "It never uses formulas."],
+        answer: "It relies on careful definitions.",
+        hint: "Think about what separates this idea from unrelated statements."
+      },
+      {
+        question: "Which statement best describes " + topic + "?",
+        options: ["It is a foundational STEM principle.", "It only works in art classes.", "It depends on random guessing.", "It requires no reasoning."],
+        answer: "It is a foundational STEM principle.",
+        hint: "Choose the option that fits scientific or mathematical thinking."
+      },
+      {
+        question: "How would you apply " + topic + " in a real example?",
+        options: ["By identifying the key variables first.", "By ignoring the instructions.", "By changing the question entirely.", "By guessing the final result."],
+        answer: "By identifying the key variables first.",
+        hint: "Good STEM practice starts by defining what matters." 
+      },
+      {
+        question: "What is one simple example of " + topic + "?",
+        options: ["A problem that connects the idea to a real scenario.", "A question unrelated to the concept.", "A random fact.", "A memorized list of terms."],
+        answer: "A problem that connects the idea to a real scenario.",
+        hint: "Look for the option that turns the concept into an application."
       }
+    ];
 
-      if (!response.ok) {
-        var msg = "Request failed.";
-        if (response.status === 422) msg = "Please check the required fields.";
-        else if (response.status === 429) msg = "Too many requests. Please wait a moment.";
-        else if (data && data.detail) {
-          msg = typeof data.detail === "string" ? data.detail : msg;
-        } else if (data && data.message) {
-          msg = data.message;
-        }
-        return { ok: false, status: response.status, error: msg, data: data };
-      }
-
-      return { ok: true, status: response.status, data: data };
-    } catch (err) {
-      return { ok: false, status: 0, error: "Unable to reach the backend. Check your connection.", data: null };
+    var questions = [];
+    for (var i = 0; i < count; i++) {
+      var item = templates[i % templates.length];
+      questions.push({
+        question: item.question,
+        options: item.options,
+        correct_answer: item.answer,
+        hint: item.hint
+      });
     }
+
+    return { topic: topic, difficulty: difficulty, questions: questions, source: "AccessSTEM AI Demo" };
   }
 
-  // ─── Toast Helper ─────────────────────────────────────────────────
-  function showToast(message, type) {
-    var container = $("toast-container");
-    if (!container) return;
-    var toast = document.createElement("div");
-    toast.className = "toast " + (type || "info");
-    toast.textContent = message;
-    container.appendChild(toast);
-    setTimeout(function () {
-      if (toast.parentNode) toast.parentNode.removeChild(toast);
-    }, 4000);
-  }
-
-  // ─── Source Badge ─────────────────────────────────────────────────
   function renderSourceBadge(source) {
     if (!source) return "";
-    if (source === "gemini") {
-      return '<span class="source-badge gemini">✦ Powered by Gemini through secure backend</span>';
-    }
-    if (source === "fallback") {
-      return '<span class="source-badge fallback">⚠ Fallback mode active. Backend is responding, but Gemini may be unavailable.</span>';
-    }
-    return '<span class="source-badge gemini">' + escapeHtml(source) + "</span>";
+    return '<span class="source-badge gemini">✦ ' + escapeHtml(source) + '</span>';
   }
 
-  // ─── Health ───────────────────────────────────────────────────────
-  async function checkHealth() {
-    setHTML("health-status", '<div class="flex items-center gap-2"><span class="spinner spinner-dark"></span> Checking...</div>');
-
-    var result = await apiRequest("/health");
-
-    if (result.ok && result.data) {
-      state.health = result.data;
-      var connected = result.data.status === "ok" || result.data.status === "healthy" || result.ok;
-      var aiOk = result.data.ai_configured || result.data.gemini_configured;
-      var dbOk = result.data.database_configured || result.data.db_configured;
-
-      setHTML("health-status", [
-        '<div class="space-y-3">',
-        '<div class="flex items-center gap-2">',
-        '<span class="status-pill ' + (connected ? "connected" : "offline") + '">',
-        '<span class="status-dot"></span>',
-        connected ? "Connected" : "Offline",
-        "</span>",
-        result.data.version ? '<span class="text-xs text-slate-400">v' + escapeHtml(result.data.version) + "</span>" : "",
-        "</div>",
-        result.data.service ? '<p class="text-sm text-slate-300">' + escapeHtml(result.data.service) + "</p>" : "",
-        aiOk !== undefined ? '<p class="text-sm text-slate-300">AI: <strong class="' + (aiOk ? "text-green-400" : "text-amber-400") + '">' + (aiOk ? "Configured" : "Not configured") + "</strong></p>" : "",
-        dbOk !== undefined ? '<p class="text-sm text-slate-300">Database: <strong class="' + (dbOk ? "text-green-400" : "text-amber-400") + '">' + (dbOk ? "Configured" : "Not configured") + "</strong></p>" : "",
-        "</div>"
-      ].join(""));
-    } else {
-      state.health = null;
-      setHTML("health-status", [
-        '<div class="space-y-2">',
-        '<span class="status-pill offline"><span class="status-dot"></span>Offline</span>',
-        '<p class="text-sm text-slate-400">' + escapeHtml(result.error || "Backend unavailable") + "</p>",
-        "</div>"
-      ].join(""));
-    }
-  }
-
-  // ─── Explanation ──────────────────────────────────────────────────
-  async function generateExplanation() {
-    var topic = $("learn-topic").value.trim();
-    var difficulty = $("learn-difficulty").value;
-    var lowBandwidth = $("learn-low-bandwidth").checked;
-
+  function generateExplanation() {
+    var topic = $("learn-topic") ? $("learn-topic").value.trim() : "";
+    var difficulty = $("learn-difficulty") ? $("learn-difficulty").value : "beginner";
     if (!topic) {
       showToast("Please enter a topic.", "error");
       return;
     }
 
-    state.currentTopic = topic;
     setLoading("btn-explain", true);
-    setHTML("explain-result", '<div class="space-y-3"><div class="skeleton h-6 w-3/4"></div><div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-5/6"></div><div class="skeleton h-4 w-2/3"></div></div>');
+    setHTML("explain-result", '<div class="space-y-3"><div class="skeleton h-6 w-3/4"></div><div class="skeleton h-4 w-full"></div><div class="skeleton h-4 w-5/6"></div></div>');
 
-    var result = await apiRequest("/api/accessstem/explain", {
-      method: "POST",
-      body: { topic: topic, difficulty: difficulty, low_bandwidth: lowBandwidth }
-    });
-
-    setLoading("btn-explain", false);
-
-    if (!result.ok) {
-      setHTML("explain-result", '<div class="text-red-600 text-sm">' + escapeHtml(result.error) + "</div>");
-      showToast(result.error, "error");
-      return;
-    }
-
-    var d = result.data;
-    var keyPoints = (d.key_points || []).map(function (p) { return "<li>" + escapeHtml(p) + "</li>"; }).join("");
-    var nextTopics = (d.next_topics || []).map(function (t) { return '<span class="inline-block bg-indigo-50 text-indigo-700 px-3 py-1 rounded-full text-sm mr-2 mb-2">' + escapeHtml(t) + "</span>"; }).join("");
-
-    setHTML("explain-result", [
-      '<div class="space-y-4 fade-in">',
-      renderSourceBadge(d.source),
-      '<h4 class="text-lg font-bold text-slate-800">' + escapeHtml(d.topic || topic) + "</h4>",
-      '<div class="prose prose-sm max-w-none text-slate-600"><p>' + escapeHtml(d.explanation || "") + "</p></div>",
-      d.example ? '<div class="bg-blue-50 border border-blue-100 rounded-xl p-4"><p class="text-sm font-semibold text-blue-800 mb-1">Example</p><p class="text-sm text-blue-700">' + escapeHtml(d.example) + "</p></div>" : "",
-      keyPoints ? '<div><p class="font-semibold text-slate-700 mb-2">Key Points</p><ul class="key-points list-disc list-inside space-y-1 text-slate-600 text-sm">' + keyPoints + "</ul></div>" : "",
-      d.check_question ? '<div class="bg-slate-50 rounded-xl p-4 border border-slate-200"><p class="text-sm font-semibold text-slate-700 mb-1">Check Your Understanding</p><p class="text-sm text-slate-600">' + escapeHtml(d.check_question) + "</p></div>" : "",
-      nextTopics ? '<div><p class="font-semibold text-slate-700 mb-2">Next Topics</p><div>' + nextTopics + "</div></div>" : "",
-      "</div>"
-    ].join(""));
-
-    showToast("Explanation generated!", "success");
+    setTimeout(function () {
+      var result = buildMockExplanation(topic, difficulty);
+      setHTML("explain-result", [
+        '<div class="space-y-4 fade-in-up">',
+        renderSourceBadge(result.source),
+        '<h4 class="text-lg font-bold text-white">' + escapeHtml(result.topic) + '</h4>',
+        '<p class="text-[#d7d7d7]">' + escapeHtml(result.explanation) + '</p>',
+        '<div class="bg-[#16394f] border border-white/10 rounded-2xl p-4">',
+        '<p class="text-sm font-semibold text-[#8db5ce] mb-2">Example</p>',
+        '<p class="text-sm text-[#c9ced7]">' + escapeHtml(result.example) + '</p>',
+        '</div>',
+        '<div><p class="font-semibold text-white mb-2">Key Points</p><ul class="list-disc list-inside space-y-1 text-[#c9ced7]">' + result.key_points.map(function (p) { return '<li>' + escapeHtml(p) + '</li>'; }).join('') + '</ul></div>',
+        '<div><p class="font-semibold text-white mb-2">Next Topics</p><div class="flex flex-wrap gap-2">' + result.next_topics.map(function (topic) { return '<span class="topic-chip">' + escapeHtml(topic) + '</span>'; }).join('') + '</div></div>',
+        '</div>'
+      ].join(''));
+      setLoading("btn-explain", false);
+      showToast("Explanation ready.", "success");
+    }, 900);
   }
 
-  // ─── Assistant ────────────────────────────────────────────────────
-  async function askAssistant() {
-    var topic = $("assistant-topic").value.trim();
-    var question = $("assistant-question").value.trim();
-    var difficulty = $("assistant-difficulty").value;
-    var mode = $("assistant-mode").value;
-
-    if (!topic || !question) {
-      showToast("Please enter a topic and question.", "error");
+  function askAssistant() {
+    var topic = $("assistant-topic") ? $("assistant-topic").value.trim() : "STEM concept";
+    var question = $("assistant-question") ? $("assistant-question").value.trim() : "";
+    if (!question) {
+      showToast("Please enter a question.", "error");
       return;
     }
 
     setLoading("btn-assistant", true);
-    setHTML("assistant-result", '<div class="flex items-center gap-3 py-6 justify-center"><span class="spinner spinner-dark"></span><span class="text-slate-500">AccessSTEM AI is thinking...</span></div>');
+    setHTML("assistant-result", '<div class="flex items-center gap-3 py-6 justify-center"><span class="spinner spinner-dark"></span><span class="text-[#c9ced7]">AccessSTEM AI is generating guidance...</span></div>');
 
-    var result = await apiRequest("/api/accessstem/assistant", {
-      method: "POST",
-      body: {
-        topic: topic,
-        question: question,
-        difficulty: difficulty,
-        mode: mode,
-        student_context: "student using TUTall frontend"
-      }
-    });
-
-    setLoading("btn-assistant", false);
-
-    if (!result.ok) {
-      setHTML("assistant-result", '<div class="text-red-600 text-sm">' + escapeHtml(result.error) + "</div>");
-      showToast(result.error, "error");
-      return;
-    }
-
-    var d = result.data;
-    var keyPoints = (d.key_points || []).map(function (p) { return "<li>" + escapeHtml(p) + "</li>"; }).join("");
-    var nextSteps = (d.next_steps || []).map(function (s) { return "<li>" + escapeHtml(s) + "</li>"; }).join("");
-    var suggested = (d.suggested_questions || []).map(function (q, i) {
-      return '<button type="button" class="suggested-question" data-question="' + escapeHtml(q) + '">' + escapeHtml(q) + "</button>";
-    }).join("");
-
-    setHTML("assistant-result", [
-      '<div class="chat-response space-y-4 fade-in">',
-      renderSourceBadge(d.source),
-      '<div><p class="text-sm font-semibold text-slate-500 mb-1">Answer</p><p class="text-slate-700">' + escapeHtml(d.answer || "") + "</p></div>",
-      keyPoints ? '<div><p class="text-sm font-semibold text-slate-500 mb-1">Key Points</p><ul class="list-disc list-inside text-sm text-slate-600 space-y-1">' + keyPoints + "</ul></div>" : "",
-      d.example ? '<div class="bg-indigo-50 rounded-lg p-3"><p class="text-sm font-semibold text-indigo-700 mb-1">Example</p><p class="text-sm text-indigo-600">' + escapeHtml(d.example) + "</p></div>" : "",
-      nextSteps ? '<div><p class="text-sm font-semibold text-slate-500 mb-1">Next Steps</p><ol class="list-decimal list-inside text-sm text-slate-600 space-y-1">' + nextSteps + "</ol></div>" : "",
-      suggested ? '<div><p class="text-sm font-semibold text-slate-500 mb-2">Suggested Follow-ups</p><div class="flex flex-wrap">' + suggested + "</div></div>" : "",
-      "</div>"
-    ].join(""));
-
-    $$(".suggested-question").forEach(function (btn) {
-      btn.addEventListener("click", function () {
-        $("assistant-question").value = btn.getAttribute("data-question");
-        $("assistant-question").focus();
-      });
-    });
-
-    showToast("AI response received!", "success");
-  }
-
-  // ─── Quiz ─────────────────────────────────────────────────────────
-  async function generateQuiz() {
-    var topic = $("quiz-topic").value.trim();
-    var difficulty = $("quiz-difficulty").value;
-    var count = clampQuestionCount($("quiz-count").value);
-
-    $("quiz-count").value = count;
-
-    if (!topic) {
-      showToast("Please enter a quiz topic.", "error");
-      return;
-    }
-
-    state.quizAnswers = {};
-    state.quizHints = {};
-    state.quizSubmitted = false;
-    state.currentTopic = topic;
-
-    setLoading("btn-quiz", true);
-    setHTML("quiz-result", '<div class="space-y-4"><div class="skeleton h-20 w-full"></div><div class="skeleton h-20 w-full"></div></div>');
-    setHTML("quiz-score", "");
-
-    var result = await apiRequest("/api/accessstem/quiz", {
-      method: "POST",
-      body: { topic: topic, difficulty: difficulty, question_count: count }
-    });
-
-    setLoading("btn-quiz", false);
-
-    if (!result.ok) {
-      setHTML("quiz-result", '<div class="text-red-600 text-sm">' + escapeHtml(result.error) + "</div>");
-      showToast(result.error, "error");
-      return;
-    }
-
-    state.quiz = result.data;
-    renderQuiz();
-    showToast("Quiz generated with " + (result.data.questions || []).length + " questions!", "success");
+    setTimeout(function () {
+      var result = buildMockAssistant(topic, question);
+      setHTML("assistant-result", [
+        '<div class="space-y-4 fade-in-up">',
+        '<div><p class="text-sm font-semibold text-[#8db5ce] mb-1">Answer</p><p class="text-[#d7d7d7]">' + escapeHtml(result.answer) + '</p></div>',
+        '<div><p class="text-sm font-semibold text-[#8db5ce] mb-1">Key Points</p><ul class="list-disc list-inside text-sm text-[#c9ced7] space-y-1">' + result.key_points.map(function (p) { return '<li>' + escapeHtml(p) + '</li>'; }).join('') + '</ul></div>',
+        '<div><p class="text-sm font-semibold text-[#8db5ce] mb-1">Next Steps</p><ol class="list-decimal list-inside text-sm text-[#c9ced7] space-y-1">' + result.next_steps.map(function (p) { return '<li>' + escapeHtml(p) + '</li>'; }).join('') + '</ol></div>',
+        '</div>'
+      ].join(''));
+      setLoading("btn-assistant", false);
+      showToast("AI guidance delivered.", "success");
+    }, 1000);
   }
 
   function renderQuiz() {
     if (!state.quiz || !state.quiz.questions) {
-      setHTML("quiz-result", '<div class="empty-state"><p>No quiz loaded. Generate one above.</p></div>');
+      setHTML("quiz-result", '<div class="empty-state glass-card p-8 text-center text-[#c9ced7]"><p class="font-semibold text-white mb-2">No quiz loaded yet.</p><p>Create one to begin.</p></div>');
       return;
     }
 
     var questions = state.quiz.questions;
-    var html = ['<div class="space-y-6 fade-in">', renderSourceBadge(state.quiz.source)];
+    var html = ['<div class="space-y-6 fade-in-up">'];
+    html.push('<div class="flex items-center justify-between"><div><p class="text-sm uppercase tracking-[0.24em] text-[#8db5ce] mb-1">Quiz topic</p><h3 class="text-xl font-semibold text-white">' + escapeHtml(state.quiz.topic) + '</h3></div><span class="text-sm text-[#c9ced7]">' + questions.length + ' questions</span></div>');
 
     questions.forEach(function (q, index) {
-      var options = q.options || [];
-      var optionsHtml = options.map(function (opt, oi) {
-        var selected = state.quizAnswers[index] === opt ? " selected" : "";
-        var extra = "";
+      var optionsHtml = q.options.map(function (opt) {
+        var checked = state.quizAnswers[index] === opt ? 'checked' : '';
+        var disabled = state.quizSubmitted ? 'disabled' : '';
+        var labelClass = 'quiz-option';
         if (state.quizSubmitted) {
-          if (opt === q.correct_answer) extra = " correct";
-          else if (state.quizAnswers[index] === opt) extra = " incorrect";
+          if (opt === q.correct_answer) labelClass += ' correct';
+          else if (state.quizAnswers[index] === opt) labelClass += ' incorrect';
         }
-        return [
-          '<label class="quiz-option' + selected + extra + '">',
-          '<input type="radio" name="quiz-q-' + index + '" value="' + escapeHtml(opt) + '" class="mt-1"' + (state.quizAnswers[index] === opt ? " checked" : "") + (state.quizSubmitted ? " disabled" : "") + ">",
-          "<span class=\"text-sm text-slate-700\">" + escapeHtml(opt) + "</span>",
-          "</label>"
-        ].join("");
-      }).join("");
+        return '<label class="' + labelClass + '"><input type="radio" name="quiz-q-' + index + '" value="' + escapeHtml(opt) + '" ' + checked + ' ' + disabled + '><span class="text-[#d7d7d7]">' + escapeHtml(opt) + '</span></label>';
+      }).join('');
 
-      var hintHtml = state.quizHints[index]
-        ? '<div class="hint-box"><p class="text-sm font-semibold text-amber-800 mb-1">Hint</p><p class="text-sm text-amber-700">' + escapeHtml(state.quizHints[index].hint || "") + "</p>" +
-          (state.quizHints[index].encouragement ? '<p class="text-sm text-amber-600 mt-2 italic">' + escapeHtml(state.quizHints[index].encouragement) + "</p>" : "") +
-          "</div>"
-        : "";
-
-      html.push([
-        '<div class="glass-card p-5" id="quiz-card-' + index + '">',
-        '<p class="font-semibold text-slate-800 mb-3"><span class="text-indigo-600">Q' + (index + 1) + ".</span> " + escapeHtml(q.question) + "</p>",
-        '<div class="space-y-2 mb-3">' + optionsHtml + "</div>",
-        !state.quizSubmitted ? '<button type="button" class="btn-outline text-sm py-2 px-4" onclick="TUTall.requestHint(' + index + ')">Get Hint</button>' : "",
-        hintHtml,
-        "</div>"
-      ].join(""));
+      html.push('<div class="glass-card p-6" id="quiz-card-' + index + '"><p class="font-semibold text-white mb-4">Q' + (index + 1) + '. ' + escapeHtml(q.question) + '</p><div class="space-y-3">' + optionsHtml + '</div>' +
+        (!state.quizSubmitted ? '<button type="button" class="btn-outline text-sm py-2 px-4 mt-4" onclick="TUTall.requestHint(' + index + ')">Get Hint</button>' : '') +
+        (state.quizHints[index] ? '<div class="hint-box mt-4"><p class="text-sm font-semibold text-[#8db5ce] mb-1">Hint</p><p class="text-[#c9ced7]">' + escapeHtml(state.quizHints[index].hint || '') + '</p></div>' : '') +
+        '</div>');
     });
 
-    html.push("</div>");
-    setHTML("quiz-result", html.join(""));
+    html.push('</div>');
+    setHTML("quiz-result", html.join(''));
 
     if (!state.quizSubmitted) {
-      questions.forEach(function (q, index) {
+      questions.forEach(function (_, index) {
         var radios = document.querySelectorAll('input[name="quiz-q-' + index + '"]');
         radios.forEach(function (radio) {
           radio.addEventListener("change", function () {
@@ -363,105 +230,77 @@
     }
   }
 
-  async function requestHint(index) {
-    if (!state.quiz || !state.quiz.questions[index]) return;
+  function generateQuiz() {
+    var topic = $("quiz-topic") ? $("quiz-topic").value.trim() : "STEM";
+    var difficulty = $("quiz-difficulty") ? $("quiz-difficulty").value : "middle school";
+    var count = $("quiz-count") ? clampQuestionCount($("quiz-count").value) : 5;
+    if ($("quiz-count")) $("quiz-count").value = count;
 
-    var q = state.quiz.questions[index];
-    var topic = $("quiz-topic").value.trim() || state.currentTopic;
-
-    var btn = document.querySelector("#quiz-card-" + index + " .btn-outline");
-    if (btn) {
-      btn.disabled = true;
-      btn.textContent = "Loading hint...";
-    }
-
-    var result = await apiRequest("/api/accessstem/hint", {
-      method: "POST",
-      body: {
-        topic: topic,
-        question: q.question,
-        student_answer: state.quizAnswers[index] || "",
-        correct_answer: q.correct_answer || ""
-      }
-    });
-
-    if (!result.ok) {
-      showToast(result.error, "error");
-      if (btn) { btn.disabled = false; btn.textContent = "Get Hint"; }
+    if (!topic) {
+      showToast("Please enter a quiz topic.", "error");
       return;
     }
 
-    state.quizHints[index] = result.data;
-    renderQuiz();
-    showToast("Hint received!", "info");
+    state.quizAnswers = {};
+    state.quizHints = {};
+    state.quizSubmitted = false;
+    state.quiz = createMockQuiz(topic, difficulty, count);
+
+    setHTML("quiz-result", '<div class="space-y-4"><div class="skeleton h-24 w-full"></div><div class="skeleton h-24 w-full"></div></div>');
+    setHTML("quiz-score", '');
+
+    setTimeout(function () {
+      renderQuiz();
+      showToast("Quiz generated with " + count + " questions.", "success");
+    }, 650);
   }
 
-  async function submitQuiz() {
+  function requestHint(index) {
+    if (!state.quiz || !state.quiz.questions[index]) return;
+    var question = state.quiz.questions[index];
+    state.quizHints[index] = { hint: question.hint || "Review the concept and choose the best answer." };
+    renderQuiz();
+    showToast("Hint added.", "info");
+  }
+
+  function submitQuiz() {
     if (!state.quiz || !state.quiz.questions) {
       showToast("Generate a quiz first.", "error");
       return;
     }
 
     var questions = state.quiz.questions;
-    var answered = Object.keys(state.quizAnswers).length;
-
-    if (answered < questions.length) {
-      showToast("Please answer all " + questions.length + " questions.", "error");
+    if (Object.keys(state.quizAnswers).length < questions.length) {
+      showToast("Please answer all questions before submitting.", "error");
       return;
     }
 
-    setLoading("btn-submit-quiz", true);
-    var score = 0;
-    var topic = $("quiz-topic").value.trim() || state.currentTopic;
-
-    for (var i = 0; i < questions.length; i++) {
-      var q = questions[i];
-      var studentAns = state.quizAnswers[i] || "";
-      var correct = false;
-
-      var checkResult = await apiRequest("/api/accessstem/check-answer", {
-        method: "POST",
-        body: {
-          question: q.question,
-          student_answer: studentAns,
-          correct_answer: q.correct_answer || "",
-          explanation: q.explanation || ""
-        }
-      });
-
-      if (checkResult.ok && checkResult.data) {
-        correct = checkResult.data.correct === true || checkResult.data.is_correct === true;
-      } else {
-        correct = studentAns === q.correct_answer;
-      }
-
-      if (correct) score++;
-    }
-
     state.quizSubmitted = true;
-    setLoading("btn-submit-quiz", false);
-    renderQuiz();
+    var score = 0;
+    questions.forEach(function (q, index) {
+      if (state.quizAnswers[index] === q.correct_answer) score += 1;
+    });
 
+    renderQuiz();
     var pct = Math.round((score / questions.length) * 100);
     setHTML("quiz-score", [
-      '<div class="glass-card p-6 text-center fade-in mt-6">',
-      '<p class="text-3xl font-bold gradient-text">' + score + " / " + questions.length + "</p>",
-      '<p class="text-slate-600 mt-1">' + pct + "% correct</p>",
-      score === questions.length ? '<p class="text-green-600 font-semibold mt-2">Perfect score! 🎉</p>' : "",
-      "</div>"
-    ].join(""));
+      '<div class="glass-card p-6 text-center fade-in-up">',
+      '<p class="text-3xl font-bold text-white">' + score + ' / ' + questions.length + '</p>',
+      '<p class="text-[#c9ced7] mt-2">' + pct + '% correct</p>',
+      score === questions.length ? '<p class="text-[#8db5ce] font-semibold mt-3">Perfect score! 🎉</p>' : '',
+      '</div>'
+    ].join(''));
 
-    await saveProgress(score, questions.length);
-    showToast("Quiz submitted! Score: " + score + "/" + questions.length, "success");
+    showToast("Quiz submitted!", "success");
   }
 
-  // ─── Study Plan ───────────────────────────────────────────────────
-  async function generateStudyPlan() {
-    var goal = $("study-goal").value.trim();
-    var gradeLevel = $("study-grade").value.trim();
-    var days = parseInt($("study-days").value, 10) || 7;
-    var weakRaw = $("study-weak").value.trim();
+  function generateStudyPlan() {
+    var goal = $("study-goal") ? $("study-goal").value.trim() : "";
+    var gradeLevel = $("study-grade") ? $("study-grade").value.trim() : "";
+    var days = $("study-days") ? parseInt($("study-days").value, 10) : 7;
+    var weakRaw = $("study-weak") ? $("study-weak").value.trim() : "";
     var weakTopics = weakRaw ? weakRaw.split(",").map(function (t) { return t.trim(); }).filter(Boolean) : [];
+    days = isNaN(days) || days < 1 ? 7 : Math.min(Math.max(days, 1), 7);
 
     if (!goal) {
       showToast("Please enter a study goal.", "error");
@@ -469,242 +308,139 @@
     }
 
     setLoading("btn-study", true);
-    setHTML("study-result", '<div class="space-y-3"><div class="skeleton h-16 w-full"></div><div class="skeleton h-16 w-full"></div></div>');
+    setHTML("study-result", '<div class="space-y-3"><div class="skeleton h-24 w-full"></div><div class="skeleton h-24 w-full"></div></div>');
 
-    var result = await apiRequest("/api/accessstem/study-plan", {
-      method: "POST",
-      body: {
-        goal: goal,
-        grade_level: gradeLevel,
-        available_days: days,
-        weak_topics: weakTopics
+    setTimeout(function () {
+      var plan = [];
+      for (var i = 1; i <= days; i++) {
+        var topic = weakTopics.length ? weakTopics[(i - 1) % weakTopics.length] : "";
+        plan.push({
+          day: i,
+          focus: topic ? 'Work on ' + topic : 'Review key concepts',
+          tasks: [
+            'Read the concept summary',
+            'Practice one targeted example',
+            'Write a short explanation in your own words'
+          ]
+        });
       }
-    });
 
-    setLoading("btn-study", false);
-
-    if (!result.ok) {
-      setHTML("study-result", '<div class="text-red-600 text-sm">' + escapeHtml(result.error) + "</div>");
-      showToast(result.error, "error");
-      return;
-    }
-
-    var d = result.data;
-    var daysHtml = (d.days || d.plan || []).map(function (day, i) {
-      var tasks = (day.tasks || []).map(function (t) { return "<li class=\"text-sm text-slate-600\">" + escapeHtml(typeof t === "string" ? t : t.task || t.description || JSON.stringify(t)) + "</li>"; }).join("");
-      return [
-        '<div class="glass-card p-5 day-card">',
-        '<div class="flex items-center justify-between mb-2">',
-        '<h4 class="font-bold text-slate-800">Day ' + (day.day || i + 1) + "</h4>",
-        day.estimated_minutes ? '<span class="text-xs bg-indigo-50 text-indigo-600 px-2 py-1 rounded-full">' + day.estimated_minutes + " min</span>" : "",
-        "</div>",
-        day.focus ? '<p class="text-sm font-medium text-indigo-600 mb-2">' + escapeHtml(day.focus) + "</p>" : "",
-        tasks ? '<ul class="list-disc list-inside space-y-1">' + tasks + "</ul>" : "",
-        "</div>"
-      ].join("");
-    }).join("");
-
-    if (!daysHtml && d.schedule) {
-      daysHtml = '<pre class="text-sm text-slate-600 whitespace-pre-wrap">' + escapeHtml(JSON.stringify(d.schedule, null, 2)) + "</pre>";
-    }
-
-    setHTML("study-result", [
-      '<div class="space-y-4 fade-in">',
-      renderSourceBadge(d.source),
-      d.summary ? '<p class="text-slate-600">' + escapeHtml(d.summary) + "</p>" : "",
-      '<div class="grid gap-4 md:grid-cols-2">' + (daysHtml || '<p class="text-slate-500">No plan days returned.</p>') + "</div>",
-      "</div>"
-    ].join(""));
-
-    showToast("Study plan generated!", "success");
+      setHTML("study-result", [
+        '<div class="space-y-4 fade-in-up">',
+        '<div class="glass-card p-6">',
+        '<h3 class="text-xl font-semibold text-white mb-3">Personalized study plan</h3>',
+        '<p class="text-[#c9ced7]">Goal: ' + escapeHtml(goal) + '</p>',
+        '<p class="text-[#c9ced7] mt-1">Grade level: ' + escapeHtml(gradeLevel || 'N/A') + ' · Days: ' + days + '</p>',
+        '</div>',
+        '<div class="grid gap-4 md:grid-cols-2">' + plan.map(function (item) {
+          return '<div class="glass-card p-5"><div class="flex items-center justify-between mb-3"><h4 class="font-semibold text-white">Day ' + item.day + '</h4><span class="text-sm text-[#8db5ce]">Focus</span></div>' +
+            '<p class="text-[#d7d7d7] mb-3">' + escapeHtml(item.focus) + '</p>' +
+            '<ul class="list-disc list-inside text-[#c9ced7] space-y-1">' + item.tasks.map(function (task) { return '<li>' + escapeHtml(task) + '</li>'; }).join('') + '</ul></div>';
+        }).join('') + '</div>',
+        '</div>'
+      ].join(''));
+      setLoading("btn-study", false);
+      showToast("Study plan created.", "success");
+    }, 850);
   }
 
-  // ─── Scholarship ──────────────────────────────────────────────────
-  async function calculateScholarship() {
-    var body = {
-      grade_level: $("sch-grade").value.trim(),
-      gpa: parseFloat($("sch-gpa").value) || 0,
-      country: $("sch-country").value.trim(),
-      intended_major: $("sch-major").value.trim(),
-      english_level: $("sch-english").value.trim(),
-      financial_need: $("sch-need").value,
-      activities: $("sch-activities").value.trim(),
-      has_essay: $("sch-essay").checked,
-      has_english_test: $("sch-english-test").checked
+  function calculateScholarship() {
+    var profile = {
+      grade_level: $("sch-grade") ? $("sch-grade").value.trim() : "",
+      gpa: $("sch-gpa") ? parseFloat($("sch-gpa").value) : 0,
+      country: $("sch-country") ? $("sch-country").value.trim() : "",
+      intended_major: $("sch-major") ? $("sch-major").value.trim() : "",
+      english_level: $("sch-english") ? $("sch-english").value.trim() : "",
+      financial_need: $("sch-need") ? $("sch-need").value : "medium",
+      first_gen: $("sch-first-gen") ? $("sch-first-gen").value : "no",
+      require_assistance: $("sch-finance") ? $("sch-finance").value : "no",
+      activities: $("sch-activities") ? $("sch-activities").value.trim() : "",
+      has_essay: $("sch-essay") ? $("sch-essay").checked : false,
+      has_english_test: $("sch-english-test") ? $("sch-english-test").checked : false
     };
 
     setLoading("btn-scholarship", true);
     setHTML("scholarship-result", '<div class="space-y-3"><div class="skeleton h-24 w-full"></div><div class="skeleton h-32 w-full"></div></div>');
 
-    var result = await apiRequest("/api/scholarships/match", {
-      method: "POST",
-      body: body
-    });
+    setTimeout(function () {
+      var baseScore = 40 + Math.min(40, Math.round(profile.gpa * 10));
+      if (profile.first_gen === "yes") baseScore += 12;
+      if (profile.require_assistance === "yes") baseScore += 12;
+      if (profile.has_essay) baseScore += 8;
+      if (profile.has_english_test) baseScore += 8;
+      var readiness = Math.min(100, Math.max(35, baseScore));
 
-    setLoading("btn-scholarship", false);
+      var matches = [
+        {
+          name: "FGLI Opportunity Grant",
+          fit_score: readiness,
+          estimated_amount: "$3,500",
+          deadline: "Nov 15",
+          strengths: ["First-generation applicant", "High financial need", "Strong extracurricular profile"],
+          improvements: ["Add a short reflective essay", "Review scholarship criteria again"],
+          required_documents: ["Transcript", "Personal statement", "Financial aid form"]
+        },
+        {
+          name: "Equity Access Support Fund",
+          fit_score: Math.max(75, readiness - 5),
+          estimated_amount: "$2,000",
+          deadline: "Dec 1",
+          strengths: ["Academic potential", "Community service background"],
+          improvements: ["Confirm English test submission", "Contact program advisor"],
+          required_documents: ["Recommendation note", "Major statement"]
+        }
+      ];
 
-    if (!result.ok) {
-      setHTML("scholarship-result", '<div class="text-red-600 text-sm">' + escapeHtml(result.error) + "</div>");
-      showToast(result.error, "error");
-      return;
-    }
+      setHTML("scholarship-result", [
+        '<div class="space-y-6 fade-in-up">',
+        '<div class="glass-card p-6">',
+        '<h3 class="text-xl font-semibold text-white mb-3">Profile summary</h3>',
+        '<div class="grid gap-4 md:grid-cols-2 text-sm text-[#c9ced7]">',
+        '<div><strong>Grade:</strong> ' + escapeHtml(profile.grade_level || "N/A") + '</div>',
+        '<div><strong>GPA:</strong> ' + escapeHtml(String(profile.gpa || "N/A")) + '</div>',
+        '<div><strong>Major:</strong> ' + escapeHtml(profile.intended_major || "N/A") + '</div>',
+        '<div><strong>Financial aid:</strong> ' + escapeHtml(profile.require_assistance === "yes" ? "Requested" : "Not requested") + '</div>',
+        '</div>',
+        '</div>',
+        '<div class="glass-card p-6 flex flex-col md:flex-row items-center gap-6">',
+        '<div class="progress-circle" style="--progress:' + readiness + '"><span>' + readiness + '%</span></div>',
+        '<div class="flex-1">',
+        '<h3 class="text-xl font-semibold text-white mb-3">Scholarship readiness</h3>',
+        '<div class="progress-bar"><div class="progress-bar-fill" style="width:' + readiness + '%"></div></div>',
+        '<p class="text-[#c9ced7] mt-4">Your profile is being matched against targeted equity grants and first-generation support opportunities.</p>',
+        '</div>',
+        '</div>',
+        '<div><h3 class="text-xl font-semibold text-white mb-4">Recommended awards</h3><div class="grid gap-4 md:grid-cols-2">' +
+        matches.map(function (match) {
+          return '<div class="match-card">' +
+            '<div class="flex items-start justify-between mb-3"><h4 class="font-bold text-white">' + escapeHtml(match.name) + '</h4><span class="text-sm text-[#8db5ce]">' + escapeHtml(match.fit_score + '% fit') + '</span></div>' +
+            '<p class="text-[#c9ced7] mb-2"><strong>Est. Amount:</strong> ' + escapeHtml(match.estimated_amount) + '</p>' +
+            '<p class="text-[#c9ced7] mb-3"><strong>Deadline:</strong> ' + escapeHtml(match.deadline) + '</p>' +
+            '<div class="mb-2"><p class="text-xs uppercase text-[#8db5ce] mb-1">Strengths</p><ul class="list-disc list-inside text-[#c9ced7] text-sm">' + match.strengths.map(function (item) { return '<li>' + escapeHtml(item) + '</li>'; }).join('') + '</ul></div>' +
+            '<div class="mb-2"><p class="text-xs uppercase text-[#8db5ce] mb-1">Improvements</p><ul class="list-disc list-inside text-[#c9ced7] text-sm">' + match.improvements.map(function (item) { return '<li>' + escapeHtml(item) + '</li>'; }).join('') + '</ul></div>' +
+            '<div><p class="text-xs uppercase text-[#8db5ce] mb-1">Documents</p><ul class="list-disc list-inside text-[#c9ced7] text-sm">' + match.required_documents.map(function (item) { return '<li>' + escapeHtml(item) + '</li>'; }).join('') + '</ul></div>' +
+            '</div>';
+        }).join('') + '</div></div>',
+        '<div class="glass-card p-5"><h3 class="text-lg font-semibold text-white mb-3">Next steps</h3><ol class="list-decimal list-inside space-y-2 text-[#c9ced7]">' +
+        ['Review your application timeline', 'Prepare the essay with your first-gen story', 'Submit financial support documents early'].map(function (item) { return '<li>' + escapeHtml(item) + '</li>'; }).join('') + '</ol></div>',
+        '</div>'
+      ].join(''));
 
-    var d = result.data;
-    var readiness = d.overall_readiness_score || d.readiness_score || 0;
-
-    var matchesHtml = (d.matches || d.scholarships || []).map(function (m) {
-      var strengths = (m.strengths || []).map(function (s) { return "<li class=\"text-sm text-green-700\">" + escapeHtml(s) + "</li>"; }).join("");
-      var improvements = (m.improvements || []).map(function (s) { return "<li class=\"text-sm text-amber-700\">" + escapeHtml(s) + "</li>"; }).join("");
-      var docs = (m.required_documents || []).map(function (doc) { return "<li class=\"text-sm text-slate-600\">" + escapeHtml(doc) + "</li>"; }).join("");
-
-      return [
-        '<div class="match-card">',
-        '<div class="flex items-start justify-between mb-3">',
-        '<h4 class="font-bold text-slate-800">' + escapeHtml(m.name || m.scholarship_name || "Scholarship") + "</h4>",
-        m.fit_score !== undefined ? '<span class="bg-indigo-100 text-indigo-700 text-sm font-semibold px-3 py-1 rounded-full">' + m.fit_score + "% fit</span>" : "",
-        "</div>",
-        m.estimated_amount ? '<p class="text-sm text-slate-600 mb-1"><strong>Est. Amount:</strong> ' + escapeHtml(String(m.estimated_amount)) + "</p>" : "",
-        m.deadline ? '<p class="text-sm text-slate-600 mb-2"><strong>Deadline:</strong> ' + escapeHtml(m.deadline) + "</p>" : "",
-        strengths ? '<div class="mb-2"><p class="text-xs font-semibold text-green-800 uppercase mb-1">Strengths</p><ul class="list-disc list-inside">' + strengths + "</ul></div>" : "",
-        improvements ? '<div class="mb-2"><p class="text-xs font-semibold text-amber-800 uppercase mb-1">Improvements</p><ul class="list-disc list-inside">' + improvements + "</ul></div>" : "",
-        docs ? '<div><p class="text-xs font-semibold text-slate-500 uppercase mb-1">Required Documents</p><ul class="list-disc list-inside">' + docs + "</ul></div>" : "",
-        "</div>"
-      ].join("");
-    }).join("");
-
-    var nextSteps = (d.next_steps || []).map(function (s) { return "<li class=\"text-sm text-slate-600\">" + escapeHtml(s) + "</li>"; }).join("");
-
-    setHTML("scholarship-result", [
-      '<div class="space-y-6 fade-in">',
-      '<div class="glass-card p-6">',
-      '<h4 class="font-bold text-slate-800 mb-4">Profile Summary</h4>',
-      '<div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">',
-      '<div><span class="text-slate-500">Grade</span><p class="font-semibold">' + escapeHtml(body.grade_level) + "</p></div>",
-      '<div><span class="text-slate-500">GPA</span><p class="font-semibold">' + body.gpa + "</p></div>",
-      '<div><span class="text-slate-500">Country</span><p class="font-semibold">' + escapeHtml(body.country) + "</p></div>",
-      '<div><span class="text-slate-500">Major</span><p class="font-semibold">' + escapeHtml(body.intended_major) + "</p></div>",
-      "</div>",
-      "</div>",
-      '<div class="flex flex-col md:flex-row items-center gap-6 glass-card p-6">',
-      '<div class="progress-circle" style="--progress:' + readiness + '"><span>' + readiness + "%</span></div>",
-      '<div class="flex-1">',
-      '<h4 class="font-bold text-slate-800 mb-2">Overall Readiness</h4>',
-      '<div class="progress-bar w-full"><div class="progress-bar-fill" style="width:' + readiness + '%"></div></div>',
-      d.advisor_summary ? '<p class="text-sm text-slate-600 mt-3">' + escapeHtml(d.advisor_summary) + "</p>" : "",
-      "</div>",
-      "</div>",
-      d.warning ? '<div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">⚠ ' + escapeHtml(d.warning) + "</div>" : "",
-      matchesHtml ? '<div><h4 class="font-bold text-slate-800 mb-4">Scholarship Matches</h4><div class="grid gap-4 md:grid-cols-2">' + matchesHtml + "</div></div>" : "",
-      nextSteps ? '<div class="glass-card p-5"><h4 class="font-bold text-slate-800 mb-2">Next Steps</h4><ol class="list-decimal list-inside space-y-1">' + nextSteps + "</ol></div>" : "",
-      "</div>"
-    ].join(""));
-
-    showToast("Scholarship readiness calculated!", "success");
+      setLoading("btn-scholarship", false);
+      showToast("Scholarship readiness calculated.", "success");
+    }, 900);
   }
 
-  // ─── Progress ─────────────────────────────────────────────────────
-  async function saveProgress(score, total) {
-    var topic = state.currentTopic || $("quiz-topic").value.trim() || "General";
-
-    var result = await apiRequest("/api/progress", {
-      method: "POST",
-      body: {
-        student_id: config.STUDENT_ID,
-        topic: topic,
-        score: score,
-        total: total
-      }
-    });
-
-    if (result.ok) {
-      await loadProgress();
-    } else {
-      showToast("Could not save progress: " + result.error, "error");
-    }
-  }
-
-  async function loadProgress() {
-    setHTML("progress-list", '<div class="flex items-center gap-2 py-4"><span class="spinner spinner-dark"></span> Loading...</div>');
-
-    var result = await apiRequest("/api/progress?student_id=" + encodeURIComponent(config.STUDENT_ID));
-
-    if (!result.ok) {
-      setHTML("progress-list", '<div class="empty-state"><p>' + escapeHtml(result.error) + "</p></div>");
-      setText("progress-avg", "—");
-      setText("progress-count", "0");
-      return;
-    }
-
-    var payload = result.data;
-    var records = payload.items || payload.records || payload;
-    if (!Array.isArray(records)) records = records ? [records] : [];
-
-    state.progress = records;
-
-    if (records.length === 0) {
-      setHTML("progress-list", '<div class="empty-state"><p>No progress yet. Complete a quiz to get started!</p></div>');
-      setText("progress-avg", (payload.average_percentage !== undefined ? payload.average_percentage : 0) + "%");
-      setText("progress-count", String(payload.completed_topics !== undefined ? payload.completed_topics : 0));
-      return;
-    }
-
-    var totalPct = 0;
-    var listHtml = records.map(function (r) {
-      var pct = r.percentage !== undefined ? r.percentage : (r.total > 0 ? Math.round((r.score / r.total) * 100) : 0);
-      totalPct += pct;
-      return [
-        '<div class="glass-card p-4 flex items-center justify-between">',
-        '<div>',
-        '<p class="font-semibold text-slate-800">' + escapeHtml(r.topic || "Unknown") + "</p>",
-        '<p class="text-sm text-slate-500">' + (r.score || 0) + "/" + (r.total || 0) + " correct</p>",
-        "</div>",
-        '<div class="text-right">',
-        '<p class="text-lg font-bold text-indigo-600">' + pct + "%</p>",
-        '<div class="progress-bar w-24 mt-1"><div class="progress-bar-fill" style="width:' + pct + '%"></div></div>',
-        "</div>",
-        "</div>"
-      ].join("");
-    }).join("");
-
-    var avg = payload.average_percentage !== undefined
-      ? Math.round(payload.average_percentage)
-      : Math.round(totalPct / records.length);
-    var count = payload.completed_topics !== undefined ? payload.completed_topics : records.length;
-
-    setHTML("progress-list", '<div class="space-y-3">' + listHtml + "</div>");
-    setText("progress-avg", avg + "%");
-    setText("progress-count", String(count));
-  }
-
-  async function clearProgress() {
-    if (!confirm("Clear all progress for demo-user?")) return;
-
-    setLoading("btn-clear-progress", true);
-
-    var result = await apiRequest("/api/progress?student_id=" + encodeURIComponent(config.STUDENT_ID), {
-      method: "DELETE"
-    });
-
-    setLoading("btn-clear-progress", false);
-
-    if (result.ok) {
-      state.progress = [];
-      await loadProgress();
-      showToast("Progress cleared.", "info");
-    } else {
-      showToast(result.error, "error");
-    }
-  }
-
-  // ─── Navigation ───────────────────────────────────────────────────
   function initNavigation() {
     var navbar = $("navbar");
     var mobileToggle = $("mobile-menu-toggle");
     var mobileMenu = $("mobile-menu");
 
-    window.addEventListener("scroll", function () {
-      if (navbar) navbar.classList.toggle("scrolled", window.scrollY > 50);
-    });
+    if (navbar) {
+      window.addEventListener("scroll", function () {
+        navbar.classList.toggle("scrolled", window.scrollY > 50);
+      });
+    }
 
     if (mobileToggle && mobileMenu) {
       mobileToggle.addEventListener("click", function () {
@@ -718,71 +454,69 @@
       });
     });
 
-    var sections = $$("section[id]");
-    var navLinks = $$(".nav-link");
+    var currentUrl = window.location.href;
+    $$(".nav-link").forEach(function (link) {
+      var href = link.href;
+      if (currentUrl.endsWith("/" + href.split('/').pop()) || (currentUrl.endsWith("/") && href.endsWith("index.html"))) {
+        link.classList.add("active");
+      }
+    });
+  }
 
-    function updateActiveNav() {
-      var scrollPos = window.scrollY + 120;
-      sections.forEach(function (section) {
-        var top = section.offsetTop;
-        var height = section.offsetHeight;
-        var id = section.getAttribute("id");
-        if (scrollPos >= top && scrollPos < top + height) {
-          navLinks.forEach(function (link) {
-            link.classList.toggle("active", link.getAttribute("href") === "#" + id);
-          });
+  function animateDashboardCards() {
+    $$(".progress-bar-fill").forEach(function (fill) {
+      var width = fill.style.width || "0%";
+      fill.style.width = "0%";
+      setTimeout(function () { fill.style.width = width; }, 100);
+    });
+  }
+
+  function initTopicChips() {
+    var chips = $$(".topic-chip");
+    if (!chips.length) return;
+
+    chips.forEach(function (chip) {
+      chip.addEventListener("click", function () {
+        var value = chip.textContent.trim();
+        if ($("learn-topic")) {
+          $("learn-topic").value = value;
+          showToast("Topic selected: " + value, "info");
         }
       });
-    }
-
-    window.addEventListener("scroll", updateActiveNav);
-    updateActiveNav();
+    });
   }
 
-  // ─── Init ─────────────────────────────────────────────────────────
   function init() {
     initNavigation();
+    animateDashboardCards();
+    initTopicChips();
 
-    $("btn-explain").addEventListener("click", generateExplanation);
-    $("btn-assistant").addEventListener("click", askAssistant);
-    $("btn-quiz").addEventListener("click", generateQuiz);
-    $("btn-submit-quiz").addEventListener("click", submitQuiz);
-    $("btn-study").addEventListener("click", generateStudyPlan);
-    $("btn-scholarship").addEventListener("click", calculateScholarship);
-    $("btn-refresh-progress").addEventListener("click", loadProgress);
-    $("btn-clear-progress").addEventListener("click", clearProgress);
-
-    $("hero-learn").addEventListener("click", function () {
-      document.querySelector("#learn").scrollIntoView({ behavior: "smooth" });
-    });
-    $("hero-assistant").addEventListener("click", function () {
-      document.querySelector("#assistant").scrollIntoView({ behavior: "smooth" });
-    });
-    $("hero-scholarship").addEventListener("click", function () {
-      document.querySelector("#scholarship").scrollIntoView({ behavior: "smooth" });
-    });
-
-    $("quiz-count").addEventListener("change", function () {
-      this.value = clampQuestionCount(this.value);
-    });
-
-    checkHealth();
-    loadProgress();
+    if ($("btn-explain")) {
+      $("btn-explain").addEventListener("click", generateExplanation);
+    }
+    if ($("btn-assistant")) {
+      $("btn-assistant").addEventListener("click", askAssistant);
+    }
+    if ($("btn-quiz")) {
+      $("btn-quiz").addEventListener("click", generateQuiz);
+    }
+    if ($("btn-submit-quiz")) {
+      $("btn-submit-quiz").addEventListener("click", submitQuiz);
+    }
+    if ($("quiz-count")) {
+      $("quiz-count").addEventListener("change", function () {
+        this.value = clampQuestionCount(this.value);
+      });
+    }
+    if ($("btn-study")) {
+      $("btn-study").addEventListener("click", generateStudyPlan);
+    }
+    if ($("btn-scholarship")) {
+      $("btn-scholarship").addEventListener("click", calculateScholarship);
+    }
   }
 
-  window.TUTall = {
-    requestHint: requestHint,
-    checkHealth: checkHealth,
-    generateExplanation: generateExplanation,
-    askAssistant: askAssistant,
-    generateQuiz: generateQuiz,
-    submitQuiz: submitQuiz,
-    generateStudyPlan: generateStudyPlan,
-    calculateScholarship: calculateScholarship,
-    saveProgress: saveProgress,
-    loadProgress: loadProgress,
-    clearProgress: clearProgress
-  };
+  window.TUTall = { requestHint: requestHint };
 
   if (document.readyState === "loading") {
     document.addEventListener("DOMContentLoaded", init);

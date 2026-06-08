@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    (function () {
+      var path = window.location.pathname;
+      var match = path.match(/^(.*\/TUTall_frontend)\/?/i);
+      if (match) {
+        var base = document.createElement("base");
+        base.href = match[1] + "/";
+        document.head.appendChild(base);
+      }
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TUTall Dashboard — Your central hub for STEM learning, AI coaching, study planning, and scholarship readiness.">
+  <title>TUTall Dashboard — AccessSTEM AI Hub</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="bg-[#122634] text-[#e3e3e3] antialiased">
+  <div id="toast-container"></div>
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 bg-[#102430]/90 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between h-16">
+        <a href="./index.html" class="flex items-center gap-2 shrink-0">
+          <div class="w-9 h-9 rounded-xl bg-[#456882] flex items-center justify-center text-white font-bold text-base">T</div>
+          <span class="text-white font-bold text-lg">TUTall</span>
+        </a>
+        <div class="hidden lg:flex items-center gap-1 nav-scroll overflow-x-auto">
+          <a href="./index.html" class="nav-link">Home</a>
+          <a href="./dashboard.html" class="nav-link">Dashboard</a>
+          <a href="./quiz.html" class="nav-link">Quiz</a>
+          <a href="./study-plan.html" class="nav-link">Study Plan</a>
+          <a href="./scholarships.html" class="nav-link">Scholarships</a>
+        </div>
+        <button id="mobile-menu-toggle" class="lg:hidden text-white p-2 rounded-lg hover:bg-white/10" aria-label="Toggle menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="mobile-menu lg:hidden pb-4">
+        <div class="flex flex-col gap-1">
+          <a href="./index.html" class="nav-link">Home</a>
+          <a href="./dashboard.html" class="nav-link">Dashboard</a>
+          <a href="./quiz.html" class="nav-link">Quiz</a>
+          <a href="./study-plan.html" class="nav-link">Study Plan</a>
+          <a href="./scholarships.html" class="nav-link">Scholarships</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <main class="pt-20">
+    <section class="hero-gradient min-h-[80vh] flex items-center">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-20">
+        <div class="grid lg:grid-cols-2 gap-12 items-center">
+          <div>
+            <p class="text-[#e3e3e3] font-semibold text-sm tracking-widest uppercase mb-3">AccessSTEM AI for FGLI STEM learners</p>
+            <h1 class="text-5xl sm:text-6xl font-extrabold text-white mb-5 leading-tight">Dashboard for academic confidence, planning, and equity.</h1>
+            <p class="text-[#d7d7d7] text-lg max-w-2xl mb-8">TUTall gives students a secure, browser-only STEM hub with AI guidance, mock quizzes, study planning, and scholarship readiness for first-generation learners.</p>
+            <div class="flex flex-wrap gap-4">
+              <a href="./quiz.html" class="btn-primary">Open Quiz Builder</a>
+              <a href="./study-plan.html" class="btn-secondary">View Study Schedule</a>
+              <a href="./scholarships.html" class="btn-secondary">Assess Scholarships</a>
+            </div>
+          </div>
+          <div class="glass rounded-3xl p-8 shadow-strong border border-white/10">
+            <div class="mb-6">
+              <p class="text-sm uppercase tracking-[0.24em] text-[#8db5ce] mb-3">Study dashboard</p>
+              <h2 class="text-3xl font-bold text-white mb-3">Your academic snapshot</h2>
+              <p class="text-[#d7d7d7] text-sm leading-relaxed">Track mock completion, refresh your study calendar, and explore suggested STEM topics crafted for first-gen learners.</p>
+            </div>
+            <div class="grid gap-4">
+              <div class="glass-card p-5">
+                <p class="text-xs uppercase tracking-[0.2em] text-[#8db5ce] mb-2">Course Completion</p>
+                <div class="text-3xl font-bold text-white">60%</div>
+                <div class="progress-bar mt-4"><div class="progress-bar-fill" style="width: 60%;"></div></div>
+              </div>
+              <div class="glass-card p-5">
+                <p class="text-xs uppercase tracking-[0.2em] text-[#8db5ce] mb-2">AI Readiness</p>
+                <div class="text-3xl font-bold text-white">89%</div>
+                <div class="progress-bar mt-4"><div class="progress-bar-fill" style="width: 89%;"></div></div>
+              </div>
+              <div class="glass-card p-5">
+                <p class="text-xs uppercase tracking-[0.2em] text-[#8db5ce] mb-2">Study Blocks</p>
+                <div class="text-3xl font-bold text-white">4 / 5</div>
+                <div class="progress-bar mt-4"><div class="progress-bar-fill" style="width: 80%;"></div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-padding bg-[#122b40]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="flex flex-col lg:flex-row items-start justify-between gap-6 mb-10">
+          <div>
+            <p class="text-[#8db5ce] uppercase text-sm tracking-[0.24em] mb-2">Explore suggested topics</p>
+            <h2 class="text-3xl font-bold text-white">Jump into topics that matter.</h2>
+          </div>
+          <p class="max-w-xl text-[#c9ced7]">Click a topic to see how AccessSTEM AI would explain it, or use it as the prompt for your next quiz or study focus.</p>
+        </div>
+        <div class="flex flex-wrap gap-3" id="topic-chips">
+          <button class="topic-chip">Newton’s Laws</button>
+          <button class="topic-chip">Photosynthesis</button>
+          <button class="topic-chip">Algebra</button>
+          <button class="topic-chip">Binary Search</button>
+          <button class="topic-chip">Calculus</button>
+          <button class="topic-chip">Cellular Respiration</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="section-padding bg-[#152d46]">
+      <div class="max-w-7xl mx-auto px-4 sm:px-6">
+        <div class="grid lg:grid-cols-2 gap-8">
+          <div class="glass-card p-8">
+            <div class="flex items-center justify-between mb-5">
+              <div>
+                <p class="text-sm uppercase tracking-[0.24em] text-[#8db5ce] mb-2">Study planning</p>
+                <h2 class="text-2xl font-bold text-white">Your study calendar preview</h2>
+              </div>
+              <div class="text-sm font-semibold text-[#c9ced7]">Static planning, demo-ready</div>
+            </div>
+            <div class="calendar-grid">
+              <div class="calendar-day active"><span>Mon</span><p>Physics review</p></div>
+              <div class="calendar-day active"><span>Tue</span><p>Algebra practice</p></div>
+              <div class="calendar-day"><span>Wed</span><p>Rest</p></div>
+              <div class="calendar-day active"><span>Thu</span><p>Mock quiz</p></div>
+              <div class="calendar-day active"><span>Fri</span><p>Scholarship prep</p></div>
+              <div class="calendar-day"><span>Sat</span><p>Balance</p></div>
+              <div class="calendar-day"><span>Sun</span><p>Reflection</p></div>
+            </div>
+            <p class="mt-5 text-[#c9ced7] text-sm">Build confidence with a simple weekly cadence designed for FGLI students balancing school, work, and application goals.</p>
+          </div>
+          <div class="glass-card p-8">
+            <div class="mb-5">
+              <p class="text-sm uppercase tracking-[0.24em] text-[#8db5ce] mb-2">AccessSTEM AI Hub</p>
+              <h2 class="text-2xl font-bold text-white">AI coaching in one place</h2>
+            </div>
+            <div class="space-y-4">
+              <div>
+                <label class="form-label" for="learn-topic">Topic</label>
+                <input type="text" id="learn-topic" class="form-input" value="Newton's Laws" placeholder="Try Newton’s Laws">
+              </div>
+              <div class="grid sm:grid-cols-2 gap-4">
+                <div>
+                  <label class="form-label" for="learn-difficulty">Difficulty</label>
+                  <select id="learn-difficulty" class="form-input">
+                    <option value="beginner" selected>Beginner</option>
+                    <option value="intermediate">Intermediate</option>
+                    <option value="advanced">Advanced</option>
+                  </select>
+                </div>
+                <div class="flex items-end">
+                  <button id="btn-explain" class="btn-primary w-full">Generate Explanation</button>
+                </div>
+              </div>
+              <div id="explain-result" class="mt-4 text-sm text-[#c9ced7]">Use the AI coach to create a concise explanation for any STEM topic.</div>
+            </div>
+            <div class="border-t border-white/10 mt-8 pt-8">
+              <div class="mb-4">
+                <p class="text-sm uppercase tracking-[0.24em] text-[#8db5ce] mb-2">Ask AccessSTEM AI</p>
+                <h3 class="text-lg font-bold text-white">Need a quick concept check?</h3>
+              </div>
+              <div class="space-y-4">
+                <div>
+                  <label class="form-label" for="assistant-question">Question</label>
+                  <textarea id="assistant-question" class="form-input" rows="3">Explain this concept with an example.</textarea>
+                </div>
+                <button id="btn-assistant" class="btn-secondary">Ask Assistant</button>
+                <div id="assistant-result" class="text-sm text-[#c9ced7]">Ask a question and get a friendly AI teaching response without giving away the answer.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>

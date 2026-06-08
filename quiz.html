@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <script>
+    (function () {
+      var path = window.location.pathname;
+      var match = path.match(/^(.*\/TUTall_frontend)\/?/i);
+      if (match) {
+        var base = document.createElement("base");
+        base.href = match[1] + "/";
+        document.head.appendChild(base);
+      }
+    })();
+  </script>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="TUTall Quiz Builder — Create and take mock STEM quizzes directly in the browser.">
+  <title>TUTall Quiz Builder</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
+        }
+      }
+    };
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body class="bg-[#122634] text-[#e3e3e3] antialiased">
+  <div id="toast-container"></div>
+  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 bg-[#102430]/90 backdrop-blur-md">
+    <div class="max-w-7xl mx-auto px-4 sm:px-6">
+      <div class="flex items-center justify-between h-16">
+        <a href="./index.html" class="flex items-center gap-2 shrink-0">
+          <div class="w-9 h-9 rounded-xl bg-[#456882] flex items-center justify-center text-white font-bold text-base">T</div>
+          <span class="text-white font-bold text-lg">TUTall</span>
+        </a>
+        <div class="hidden lg:flex items-center gap-1 nav-scroll overflow-x-auto">
+          <a href="./index.html" class="nav-link">Home</a>
+          <a href="./dashboard.html" class="nav-link">Dashboard</a>
+          <a href="./quiz.html" class="nav-link">Quiz</a>
+          <a href="./study-plan.html" class="nav-link">Study Plan</a>
+          <a href="./scholarships.html" class="nav-link">Scholarships</a>
+        </div>
+        <button id="mobile-menu-toggle" class="lg:hidden text-white p-2 rounded-lg hover:bg-white/10" aria-label="Toggle menu">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+      </div>
+      <div id="mobile-menu" class="mobile-menu lg:hidden pb-4">
+        <div class="flex flex-col gap-1">
+          <a href="./index.html" class="nav-link">Home</a>
+          <a href="./dashboard.html" class="nav-link">Dashboard</a>
+          <a href="./quiz.html" class="nav-link">Quiz</a>
+          <a href="./study-plan.html" class="nav-link">Study Plan</a>
+          <a href="./scholarships.html" class="nav-link">Scholarships</a>
+        </div>
+      </div>
+    </div>
+  </nav>
+  <main class="pt-20">
+    <section class="section-padding bg-[#122b40] min-h-screen">
+      <div class="max-w-6xl mx-auto px-4 sm:px-6">
+        <div class="text-center mb-10">
+          <p class="text-[#8db5ce] uppercase tracking-[0.24em] text-sm mb-2">Interactive quiz builder</p>
+          <h1 class="text-4xl sm:text-5xl font-bold text-white">Build a mock STEM quiz in seconds.</h1>
+          <p class="mt-4 text-[#c9ced7] max-w-3xl mx-auto">Control the question count, difficulty, and topic. All answers are scored locally so the page remains fully demo-ready.</p>
+        </div>
+
+        <div class="glass-card p-8 mb-10">
+          <div class="grid sm:grid-cols-3 gap-4 mb-6">
+            <div>
+              <label class="form-label" for="quiz-topic">Topic</label>
+              <input type="text" id="quiz-topic" class="form-input" value="Photosynthesis" placeholder="Enter topic">
+            </div>
+            <div>
+              <label class="form-label" for="quiz-difficulty">Difficulty</label>
+              <select id="quiz-difficulty" class="form-input">
+                <option value="elementary">Elementary</option>
+                <option value="middle school" selected>Middle School</option>
+                <option value="high school">High School</option>
+                <option value="college">College</option>
+              </select>
+            </div>
+            <div>
+              <label class="form-label" for="quiz-count">Questions</label>
+              <select id="quiz-count" class="form-input">
+                <option value="3">3 Questions</option>
+                <option value="5" selected>5 Questions</option>
+                <option value="7">7 Questions</option>
+              </select>
+            </div>
+          </div>
+          <div class="flex flex-wrap gap-3">
+            <button id="btn-quiz" class="btn-primary">Generate Quiz</button>
+            <button id="btn-submit-quiz" class="btn-outline">Submit Quiz</button>
+          </div>
+        </div>
+
+        <div id="quiz-result" class="mb-6">
+          <div class="empty-state glass-card p-8 text-center text-[#c9ced7]">
+            <p class="font-semibold text-white mb-2">Your quiz will appear here.</p>
+            <p>Select a topic and question count, then generate a practice set.</p>
+          </div>
+        </div>
+        <div id="quiz-score"></div>
+      </div>
+    </section>
+  </main>
+  <script src="./app.js"></script>
+</body>
+</html>
