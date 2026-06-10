@@ -8,6 +8,9 @@
     "build": "echo 'No build step required for this static site.'",
     "start": "npm run dev"
   },
+  "dependencies": {
+    "ogl": "^1.0.11"
+  },
   "devDependencies": {
     "serve": "^14.2.0"
   }

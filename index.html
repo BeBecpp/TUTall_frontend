@@ -2,132 +2,72 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <script>
-    (function () {
-      var path = window.location.pathname;
-      var match = path.match(/^(.*\/TUTall_frontend)\/?/i);
-      if (match) {
-        var base = document.createElement("base");
-        base.href = match[1] + "/";
-        document.head.appendChild(base);
-      }
-    })();
-  </script>
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <meta name="description" content="TUTall — AI-powered educational platform for first-generation STEM students.">
-  <title>TUTall — AccessSTEM AI for FGLI STEM Learners</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <script>
-    tailwind.config = {
-      theme: {
-        extend: {
-          fontFamily: { sans: ['Inter', 'system-ui', 'sans-serif'] }
-        }
-      }
-    };
-  </script>
+  <meta name="description" content="TUTall — Premium academic AI tutoring, study planning, and progress analytics for STEM learners.">
+  <title>TUTall — Academic AI Tutoring Platform</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="./styles.css">
 </head>
-<body class="bg-[#122634] text-[#e3e3e3] antialiased">
-  <div id="toast-container"></div>
-  <nav id="navbar" class="navbar fixed top-0 left-0 right-0 z-50 bg-[#102430]/90 backdrop-blur-md">
-    <div class="max-w-7xl mx-auto px-4 sm:px-6">
-      <div class="flex items-center justify-between h-16">
-        <a href="./index.html" class="flex items-center gap-2 shrink-0">
-          <div class="w-9 h-9 rounded-xl bg-[#456882] flex items-center justify-center text-white font-bold text-base">T</div>
-          <span class="text-white font-bold text-lg">TUTall</span>
-        </a>
-        <div class="hidden lg:flex items-center gap-1 nav-scroll overflow-x-auto">
-          <a href="./index.html" class="nav-link">Home</a>
-          <a href="./dashboard.html" class="nav-link">Dashboard</a>
-          <a href="./quiz.html" class="nav-link">Quiz</a>
-          <a href="./study-plan.html" class="nav-link">Study Plan</a>
-          <a href="./scholarships.html" class="nav-link">Scholarships</a>
-        </div>
-        <button id="mobile-menu-toggle" class="lg:hidden text-white p-2 rounded-lg hover:bg-white/10" aria-label="Toggle menu">
-          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
-        </button>
-      </div>
-      <div id="mobile-menu" class="mobile-menu lg:hidden pb-4">
-        <div class="flex flex-col gap-1">
-          <a href="./index.html" class="nav-link">Home</a>
-          <a href="./dashboard.html" class="nav-link">Dashboard</a>
-          <a href="./quiz.html" class="nav-link">Quiz</a>
-          <a href="./study-plan.html" class="nav-link">Study Plan</a>
-          <a href="./scholarships.html" class="nav-link">Scholarships</a>
+<body class="page-shell">
+  <div id="silk-canvas" class="silk-canvas" aria-hidden="true"></div>
+  <div class="app-shell">
+    <header class="topbar glass-panel" role="banner">
+      <div class="brand-group">
+        <span class="brand-mark" aria-hidden="true">T</span>
+        <div>
+          <p class="brand-eyebrow">TUTall Academic Studio</p>
+          <p class="brand-title">AI tutoring for focused study.</p>
         </div>
       </div>
-    </div>
-  </nav>
-  <main class="pt-20">
-    <section class="hero-gradient min-h-screen flex items-center">
-      <div class="max-w-6xl mx-auto px-4 sm:px-6 py-20">
-        <div class="grid lg:grid-cols-2 gap-12 items-center">
-          <div>
-            <p class="text-[#8db5ce] font-semibold text-sm tracking-widest uppercase mb-3">AccessSTEM AI · FGLI-focused</p>
-            <h1 class="text-5xl sm:text-6xl font-extrabold text-white mb-5 leading-tight">Empowering first-generation STEM students with browser-first AI coaching.</h1>
-            <p class="text-[#d7d7d7] text-lg max-w-2xl mb-8">TUTall delivers a polished frontend experience for STEM explanations, practice quizzes, study planning, and scholarship readiness — all without a backend dependency.</p>
-            <div class="flex flex-wrap gap-4">
-              <a href="./dashboard.html" class="btn-primary">Open Dashboard</a>
-              <a href="./quiz.html" class="btn-secondary">Try Quiz Builder</a>
-              <a href="./study-plan.html" class="btn-secondary">View Study Plan</a>
-            </div>
-          </div>
-          <div class="glass rounded-3xl p-8 shadow-strong border border-white/10">
-            <div class="mb-6">
-              <p class="text-sm uppercase tracking-[0.24em] text-[#8db5ce] mb-2">Platform highlights</p>
-              <h2 class="text-3xl font-bold text-white mb-3">Modern, trustworthy, and academy-ready.</h2>
-              <p class="text-[#d7d7d7] text-sm leading-relaxed">The new TUTall front-end is built to showcase clean flows, polished cards, and interactive learning features in a high-stakes demo environment.</p>
-            </div>
-            <div class="grid gap-4">
-              <div class="glass-card p-5">
-                <p class="text-sm text-[#8db5ce] uppercase tracking-[0.24em] mb-2">Zero backend dependency</p>
-                <p class="text-[#d7d7d7] text-sm">All demo interactions, quiz generation, and scholarship scoring run in-browser.</p>
-              </div>
-              <div class="glass-card p-5">
-                <p class="text-sm text-[#8db5ce] uppercase tracking-[0.24em] mb-2">FGLI focus</p>
-                <p class="text-[#d7d7d7] text-sm">Designed for first-gen and low-income STEM students with targeted support questions.</p>
-              </div>
-              <div class="glass-card p-5">
-                <p class="text-sm text-[#8db5ce] uppercase tracking-[0.24em] mb-2">Modern UI</p>
-                <p class="text-[#d7d7d7] text-sm">Dark palette, glass panels, smooth interactions, and readable typography.</p>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </section>
+      <button id="navigationToggle" class="nav-toggle" aria-label="Open navigation" aria-expanded="false">
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+    </header>
 
-    <section class="section-padding bg-[#122b40]">
-      <div class="max-w-7xl mx-auto px-4 sm:px-6">
-        <div class="grid gap-6 lg:grid-cols-4">
-          <a href="./dashboard.html" class="glass-card p-6 hover:-translate-y-1 transition transform duration-200">
-            <p class="text-sm uppercase tracking-[0.24em] text-[#8db5ce] mb-3">Dashboard</p>
-            <h3 class="text-xl font-bold text-white mb-2">Central hub</h3>
-            <p class="text-[#c9ced7] text-sm">Access topic chips, progress cards, and AI micro-coaching from one place.</p>
-          </a>
-          <a href="./quiz.html" class="glass-card p-6 hover:-translate-y-1 transition transform duration-200">
-            <p class="text-sm uppercase tracking-[0.24em] text-[#8db5ce] mb-3">Quiz</p>
-            <h3 class="text-xl font-bold text-white mb-2">Practice builder</h3>
-            <p class="text-[#c9ced7] text-sm">Generate a local mock quiz with the exact number of questions you choose.</p>
-          </a>
-          <a href="./study-plan.html" class="glass-card p-6 hover:-translate-y-1 transition transform duration-200">
-            <p class="text-sm uppercase tracking-[0.24em] text-[#8db5ce] mb-3">Study Plan</p>
-            <h3 class="text-xl font-bold text-white mb-2">Weekly schedule</h3>
-            <p class="text-[#c9ced7] text-sm">Create a visually appealing study schedule and calendar preview.</p>
-          </a>
-          <a href="./scholarships.html" class="glass-card p-6 hover:-translate-y-1 transition transform duration-200">
-            <p class="text-sm uppercase tracking-[0.24em] text-[#8db5ce] mb-3">Scholarships</p>
-            <h3 class="text-xl font-bold text-white mb-2">Readiness score</h3>
-            <p class="text-[#c9ced7] text-sm">Assess grant fit with first-generation and financial assistance factors.</p>
-          </a>
+    <div class="layout-shell">
+      <aside class="sidebar glass-panel" id="sidebar" aria-label="Primary navigation">
+        <div class="sidebar-section">
+          <p class="sidebar-label">Workspace</p>
+          <nav class="nav-list" role="menubar" aria-label="Main navigation">
+            <button class="nav-link active" data-route="home" role="menuitem">Home</button>
+            <button class="nav-link" data-route="dashboard" role="menuitem">Dashboard</button>
+            <button class="nav-link" data-route="tutor" role="menuitem">Tutor</button>
+            <button class="nav-link" data-route="planner" role="menuitem">Study Planner</button>
+            <button class="nav-link" data-route="calendar" role="menuitem">Calendar</button>
+            <button class="nav-link" data-route="profile" role="menuitem">Profile</button>
+            <button class="nav-link" data-route="settings" role="menuitem">Settings</button>
+          </nav>
         </div>
-      </div>
-    </section>
-  </main>
+        <div class="sidebar-section sidebar-summary">
+          <div class="summary-card">
+            <span class="summary-label">Study streak</span>
+            <strong>5 days</strong>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Mastery</span>
+            <strong>82%</strong>
+          </div>
+          <div class="summary-card">
+            <span class="summary-label">Focus index</span>
+            <strong>+14%</strong>
+          </div>
+        </div>
+      </aside>
+
+      <main class="content-shell" id="route-container" tabindex="0">
+        <!-- Route content is rendered here -->
+      </main>
+    </div>
+  </div>
+
+  <div id="toast-container" aria-live="polite" aria-atomic="true"></div>
+  <div id="route-announcer" class="visually-hidden" aria-live="polite" aria-atomic="true"></div>
+
+  <script type="module" src="./silk.js"></script>
   <script src="./app.js"></script>
 </body>
 </html>
